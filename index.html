@@ -1,0 +1,1068 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FPS Aim Trainer - Improve Your Aim & Reaction Speed</title>
+
+    <!-- 2. Description -->
+    <meta name="description" content="Train your aiming skills with this free FPS aim trainer game. Track accuracy, headshots, and level up as you improve. No install needed.">
+  
+    <!-- 3. Keywords -->
+    <meta name="keywords" content="FPS aim trainer, aim practice, reaction time, shooter training, browser game, headshot accuracy, free game, aiming skills , best aim trainer for FPS">
+  
+    <!-- 4. Viewport (mobile-friendly) -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+    <!-- 5. Open Graph (for Facebook, LinkedIn etc.) -->
+    <meta property="og:title" content="FPS Aim Trainer" />
+    <meta property="og:description" content="A fast, free, browser-based FPS aim trainer to improve your accuracy and reflexes." />
+    <meta property="og:image" content="https://yourdomain.com/thumbnail.jpg" />
+    <meta property="og:url" content="https://yourdomain.com/" />
+    <meta property="og:type" content="website" />
+  
+    <!-- 6. Twitter Cards -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="FPS Aim Trainer" />
+    <meta name="twitter:description" content="Improve your aim and reaction time with this free web-based aim trainer." />
+    <meta name="twitter:image" content="https://yourdomain.com/thumbnail.jpg" />
+  
+    <!-- 7. Favicon -->
+    <link rel="icon" href="/favicon.ico" />
+  
+    <!-- 8. Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Game",
+      "name": "FPS Aim Trainer",
+      "url": "https://yourdomain.com/",
+      "applicationCategory": "GameApplication",
+      "operatingSystem": "Web",
+      "description": "A browser-based FPS aim training game to boost accuracy, speed, and headshot reflexes. Track your performance in real time.",
+      "image": "https://yourdomain.com/thumbnail.jpg"
+    }
+    </script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #212121, #323232, #0a0a0a);
+            color: white;
+            
+            overflow: scroll;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: crosshair;
+        }
+        
+        .game-container {
+            text-align: center;
+            width: 900px;
+            max-width: 95%;
+            position: relative;
+        }
+        
+        .title {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            color: #00c8ff;
+        }
+        
+        .info-panel {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 2rem;
+            font-size: 1.5rem;
+        }
+        
+        .info-box {
+            background-color: rgba(0, 200, 255, 0.1);
+            border-radius: 3px;
+            padding: 1rem;
+            min-width: 150px;
+            box-shadow: 0 0 15px rgba(0, 200, 255, 0.2);
+            border: 1px solid rgba(0, 200, 255, 0.3);
+        }
+        
+        .info-label {
+            font-size: 0.9rem;
+            opacity: 0.7;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .info-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+        
+        .game-area {
+            width: 100%;
+            height: 500px;
+            background: #2a2a2a;
+            background-size: cover;
+            background-position: center;
+            border-radius: 5px;
+            position: relative;
+            overflow: hidden;
+            cursor: crosshair;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
+            border: 1px solid rgba(0, 200, 255, 0.3);
+        }
+        
+        .crosshair {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 1000;
+            display: none;
+        }
+        
+        .crosshair-inner {
+            width: 4px;
+            height: 4px;
+            background-color: rgba(0, 200, 255, 0.8);
+            border-radius: 50%;
+        }
+        
+        .crosshair-lines {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        
+        .crosshair-line {
+            position: absolute;
+            background-color: rgba(0, 200, 255, 0.8);
+        }
+        
+        .crosshair-line.horizontal {
+            height: 1px;
+            width: 10px;
+            top: 0;
+        }
+        
+        .crosshair-line.vertical {
+            width: 1px;
+            height: 10px;
+            left: 0;
+        }
+        
+        .crosshair-line.left {
+            right: 4px;
+        }
+        
+        .crosshair-line.right {
+            left: 4px;
+        }
+        
+        .crosshair-line.top {
+            bottom: 4px;
+        }
+        
+        .crosshair-line.bottom {
+            top: 4px;
+        }
+        
+        .start-screen, .end-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(0, 0, 0, 0.85);
+            z-index: 10;
+            border: 1px solid rgba(0, 200, 255, 0.3);
+        }
+        
+        .button {
+            background-color: rgba(0, 200, 255, 0.2);
+            color: #00c8ff;
+            border: 1px solid #00c8ff;
+            padding: 1rem 2rem;
+            font-size: 1.2rem;
+            border-radius: 3px;
+            cursor: pointer;
+            margin-top: 2rem;
+            transition: all 0.3s;
+            box-shadow: 0 0 15px rgba(0, 200, 255, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .button:hover {
+            background-color: rgba(0, 200, 255, 0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 0 20px rgba(0, 200, 255, 0.6);
+        }
+        
+        .button:active {
+            transform: translateY(1px);
+        }
+        
+        .level {
+            font-size: 1.2rem;
+            margin-top: 1rem;
+            color: #00c8ff;
+        }
+        
+        .click-effect {
+            position: absolute;
+            pointer-events: none;
+            border-radius: 50%;
+            animation: clickEffect 0.8s ease-out forwards;
+        }
+        
+        .bullet-hole {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: radial-gradient(circle, #333, #111);
+            border-radius: 50%;
+            pointer-events: none;
+            box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.8);
+            z-index: 2;
+        }
+        
+        .target {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: transparent;
+            cursor: crosshair;
+            z-index: 3;
+        }
+        
+        .target-inner {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.7);
+        }
+        
+        .target-ring {
+            position: absolute;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 0, 0, 0.8);
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+        }
+        
+        .target-center {
+            position: absolute;
+            width: 30%;
+            height: 30%;
+            background-color: rgba(255, 0, 0, 0.8);
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        
+        .progress-container {
+            width: 100%;
+            height: 5px;
+            background-color: rgba(255, 255, 255, 0.1);
+            margin-top: 20px;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #00c8ff, #0077ff);
+            width: 0%;
+            transition: width 0.3s;
+        }
+        
+        .end-title {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: #00c8ff;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+        
+        .score-display {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .stats-table {
+            margin-top: 20px;
+            border-collapse: collapse;
+            width: 80%;
+            max-width: 500px;
+            color: #ddd;
+        }
+        
+        .stats-table th, .stats-table td {
+            padding: 8px 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(0, 200, 255, 0.3);
+        }
+        
+        .stats-table th {
+            color: #00c8ff;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+        }
+        
+        .particle {
+            position: absolute;
+            pointer-events: none;
+            background-color: #ff3333;
+            border-radius: 50%;
+            animation: particle 1s ease-out forwards;
+        }
+        
+        .muzzle-flash {
+            position: fixed;
+            pointer-events: none;
+            z-index: 1001;
+            opacity: 0;
+        }
+        
+        @keyframes targetPulse {
+            0% {
+                transform: scale(1);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(1.1);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes clickEffect {
+            0% {
+                width: 0px;
+                height: 0px;
+                opacity: 0.5;
+                border: 1px solid #00c8ff;
+            }
+            100% {
+                width: 50px;
+                height: 50px;
+                opacity: 0;
+                border: 1px solid #00c8ff;
+            }
+        }
+        
+        @keyframes muzzleFlash {
+            0% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(1.2);
+            }
+        }
+        
+        @keyframes particle {
+            0% {
+                transform: translate(0, 0) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--tx), var(--ty)) scale(0);
+                opacity: 0;
+            }
+        }
+        
+        .hit-marker {
+            position: absolute;
+            color: #fff;
+            font-size: 14px;
+            font-weight: bold;
+            text-shadow: 0 0 3px rgba(0, 0, 0, 1);
+            animation: hitMarkerFade 0.8s ease-out forwards;
+            pointer-events: none;
+            font-family: monospace;
+        }
+        
+        .hit-marker.headshot {
+            color: #ff3333;
+            font-size: 18px;
+        }
+        
+        @keyframes hitMarkerFade {
+            0% {
+                opacity: 0;
+                transform: translateY(0);
+            }
+            20% {
+                opacity: 1;
+                transform: translateY(-10px);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+        }
+        
+        .hit-accuracy {
+            position: absolute;
+            color: #00c8ff;
+            font-size: 12px;
+            font-weight: bold;
+            animation: accuracyFade 2s ease-out forwards;
+            pointer-events: none;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 2px 6px;
+            border-radius: 2px;
+        }
+        
+        @keyframes accuracyFade {
+            0% {
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            80% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+            }
+        }
+        footer {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            text-align: left;
+        }
+        
+        footer h1, footer h2 {
+            color: #00c8ff;
+        }
+        
+        footer p, footer ul {
+            color: #ddd;
+            line-height: 1.6;
+        }
+        
+        footer ul {
+            padding-left: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="crosshair">
+        <div class="crosshair-inner"></div>
+        <div class="crosshair-lines">
+            <div class="crosshair-line horizontal left"></div>
+            <div class="crosshair-line horizontal right"></div>
+            <div class="crosshair-line vertical top"></div>
+            <div class="crosshair-line vertical bottom"></div>
+        </div>
+    </div>
+    
+    <div class="muzzle-flash">
+        <svg width="100" height="100" viewBox="0 0 100 100">
+            <polygon points="50,0 45,50 50,40 55,50" fill="#ff9933" />
+            <circle cx="50" cy="50" r="10" fill="#ffcc33" />
+        </svg>
+    </div>
+    
+    <div class="game-container">
+        <h1 class="title" id="pagetitle">FPS Aim Trainer</h1>
+        
+        <div class="info-panel">
+            <div class="info-box">
+                <div class="info-label">TIME</div>
+                <div class="info-value" id="timer">30</div>
+            </div>
+            <div class="info-box">
+                <div class="info-label">TARGETS</div>
+                <div class="info-value"><span id="click-count">0</span>/<span id="click-target">20</span></div>
+            </div>
+            <div class="info-box">
+                <div class="info-label">LEVEL</div>
+                <div class="info-value" id="level">1</div>
+            </div>
+            <div class="info-box">
+                <div class="info-label">ACCURACY</div>
+                <div class="info-value" id="accuracy">100%</div>
+            </div>
+        </div>
+        
+        <div class="game-area" id="game-area">
+            <div class="start-screen" id="start-screen">
+                <h2>FPS Aim Training</h2>
+                <p>Hit targets within the time limit to improve your aim.</p>
+                <p>Headshots earn bonus points.</p>
+                <button class="button" id="start-button">TRAINING START</button>
+            </div>
+            
+            <div class="end-screen" id="end-screen" style="display: none;">
+                <h2 class="end-title" id="end-title">TRAINING COMPLETE</h2>
+                <p class="score-display" id="final-score">Score: 0</p>
+                
+                <table class="stats-table">
+                    <tr>
+                        <th>Statistic</th>
+                        <th>Result</th>
+                    </tr>
+                    <tr>
+                        <td>Accuracy</td>
+                        <td id="final-accuracy">0%</td>
+                    </tr>
+                    <tr>
+                        <td>Targets Hit</td>
+                        <td id="final-targets">0</td>
+                    </tr>
+                    <tr>
+                        <td>Headshots</td>
+                        <td id="final-headshots">0</td>
+                    </tr>
+                    <tr>
+                        <td>Final Level</td>
+                        <td id="final-level">1</td>
+                    </tr>
+                </table>
+                
+                <button class="button" id="restart-button">RESTART</button>
+            </div>
+        </div>
+        
+        <div class="progress-container">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+        <footer>
+            <section id="game-description">
+                <h1>Improve Your Aim with Our Free FPS Aim Trainer</h1>
+                <p>
+                    Welcome to the <strong>FPS Aim Trainer</strong> – the ultimate browser-based game designed to help you
+                    boost your aiming skills, reflexes, and shooting accuracy. Whether you're a competitive gamer or
+                    just looking to improve your reaction time, this game is the perfect training ground.
+                </p>
+              
+                <h2>How It Works</h2>
+                <p>
+                    The game challenges you to click fast-moving targets within a limited time. Each successful hit scores points,
+                    with bonus rewards for headshots and combos. As you progress, the difficulty increases to push your limits.
+                </p>
+              
+                <h2>Features</h2>
+                <ul>
+                    <li>30-second timer challenge</li>
+                    <li>Target, combo, and headshot tracking</li>
+                    <li>Accuracy and performance statistics</li>
+                    <li>Custom sound effects and visual feedback</li>
+                    <li>Mobile-friendly and no downloads required</li>
+                </ul>
+              
+                <h2>Why Use an Aim Trainer?</h2>
+                <p>
+                    Practicing with an aim trainer helps build muscle memory and improves hand-eye coordination.
+                    It’s an essential tool for FPS games like Valorant, CS:GO, Call of Duty, and Apex Legends.
+                </p>
+              
+                <h2>Play Anywhere, Anytime</h2>
+                <p>
+                    This aim trainer runs directly in your browser and doesn’t require any installation.
+                    It’s free, lightweight, and optimized for all devices. Try it daily and track your progress!
+                </p>
+              
+                <p><em>Boost your skills. Level up your aim. Start training now!</em></p>
+            </section>
+        </footer>
+    </div>
+    
+    <script>
+        // Ensure DOM is fully loaded
+        window.onload = function() {
+            // Game variables
+            const gameData = {
+                timeLeft: 30,
+                clicks: 0,
+                targetClicks: 20,
+                level: 1,
+                gameActive: false,
+                timer: null,
+                score: 0,
+                totalShots: 0,
+                hits: 0,
+                headshots: 0,
+                misses: 0,
+                lastClickTime: 0,
+                targets: [],
+                bulletHoles: [],
+                combo: 1
+            };
+
+            // Audio setup
+            const bgm = new Audio('./bgm.mp3'); // Replace with actual BGM URL or local path
+            bgm.loop = true;
+            bgm.volume = 0.3; // Adjust volume (0.0 to 1.0)
+            // const shotSound = new Audio('./misshit.mp3'); // Replace with actual shot sound URL
+            // shotSound.volume = 0.5;
+            // const startSound = new Audio('./start.mp3'); // Replace with actual shot sound URL
+            // shotSound.volume = 0.5;
+            // const hitSound = new Audio('./hit.mp3'); // Replace with actual hit sound URL
+            // hitSound.volume = 0.5;
+            // const headshotSound = new Audio('./headshot.mp3'); // Replace with actual headshot sound URL
+            // headshotSound.volume = 0.6;
+
+            function playSound(src) {
+                const sound = new Audio(src);
+                sound.volume=0.5;
+                sound.play();
+            }
+
+            // Debug: Verify audio loading
+            bgm.addEventListener('canplaythrough', () => console.log('BGM loaded'));
+            bgm.addEventListener('error', () => console.warn('BGM failed to load'));
+            // shotSound.addEventListener('canplaythrough', () => console.log('Shot sound loaded'));
+            // shotSound.addEventListener('error', () => console.warn('Shot sound failed to load'));
+            // hitSound.addEventListener('canplaythrough', () => console.log('Hit sound loaded'));
+            // hitSound.addEventListener('error', () => console.warn('Hit sound failed to load'));
+            // headshotSound.addEventListener('canplaythrough', () => console.log('Headshot sound loaded'));
+            // headshotSound.addEventListener('error', () => console.warn('Headshot sound failed to load'));
+
+            // DOM elements
+            const gameArea = document.getElementById('game-area');
+            const startScreen = document.getElementById('start-screen');
+            const endScreen = document.getElementById('end-screen');
+            const startButton = document.getElementById('start-button');
+            const restartButton = document.getElementById('restart-button');
+            const timerDisplay = document.getElementById('timer');
+            const clickCount = document.getElementById('click-count');
+            const clickTarget = document.getElementById('click-target');
+            const levelDisplay = document.getElementById('level');
+            const accuracyDisplay = document.getElementById('accuracy');
+            const progressBar = document.getElementById('progress-bar');
+            const finalScore = document.getElementById('final-score');
+            const finalAccuracy = document.getElementById('final-accuracy');
+            const finalTargets = document.getElementById('final-targets');
+            const finalHeadshots = document.getElementById('final-headshots');
+            const finalLevel = document.getElementById('final-level');
+            const endTitle = document.getElementById('end-title');
+            const crosshair = document.querySelector('.crosshair');
+            const muzzleFlash = document.querySelector('.muzzle-flash');
+
+            // Debug: Verify element references
+            console.log('startButton:', startButton);
+            console.log('gameArea:', gameArea);
+            console.log('crosshair:', crosshair);
+            console.log('DOM fully loaded');
+
+            // Start game
+            function startGame() {
+                console.log('startGame called');
+                gameData.gameActive = true;
+                gameData.timeLeft = 30;
+                gameData.clicks = 0;
+                gameData.targetClicks = 20;
+                gameData.level = 1;
+                gameData.score = 0;
+                gameData.totalShots = 0;
+                gameData.hits = 0;
+                gameData.headshots = 0;
+                gameData.misses = 0;
+                gameData.combo = 1;
+
+                startScreen.style.display = 'none';
+                endScreen.style.display = 'none';
+                crosshair.style.display = 'block';
+                removeBulletHoles();
+                removeAllTargets();
+                createTarget();
+
+                // Play BGM
+                bgm.play().catch(e => console.warn('BGM play failed:', e));
+
+                // Set timer
+                gameData.timer = setInterval(() => {
+                    gameData.timeLeft--;
+                    timerDisplay.textContent = gameData.timeLeft;
+                    if (gameData.timeLeft <= 0) {
+                        endGame(false);
+                    }
+                }, 1000);
+
+                updateUI();
+            }
+
+            // Update UI
+            function updateUI() {
+                clickCount.textContent = gameData.clicks;
+                clickTarget.textContent = gameData.targetClicks;
+                levelDisplay.textContent = gameData.level;
+                timerDisplay.textContent = gameData.timeLeft;
+                progressBar.style.width = `${(gameData.clicks / gameData.targetClicks) * 100}%`;
+
+                const accuracy = gameData.totalShots > 0 ? Math.round((gameData.hits / gameData.totalShots) * 100) : 100;
+                accuracyDisplay.textContent = `${accuracy}%`;
+            }
+
+            // Handle target click
+            function handleTargetClick(e) {
+                e.stopPropagation();
+                if (!gameData.gameActive) return;
+
+                const isHeadshot = e.target.classList.contains('target-center');
+                gameData.clicks++;
+                gameData.hits++;
+                gameData.totalShots++;
+                if (isHeadshot) {
+                    gameData.headshots++;
+                    gameData.score += 100; // Bonus for headshot
+                    playSound('./headshot.mp3')
+                } else {
+                    gameData.score += 50; // Regular hit
+                    playSound('./hit.mp3');
+                }
+
+                showHitMarker(e.pageX, e.pageY, isHeadshot);
+                createParticles(e.pageX, e.pageY);
+
+                const now = Date.now();
+                if (now - gameData.lastClickTime < 1000) {
+                    gameData.combo++;
+                    if (gameData.combo >= 3) {
+                        showComboAlert(e.pageX, e.pageY);
+                        if (gameData.combo >= 5) {
+                            gameData.clicks++;
+                            gameData.score += 50; // Combo bonus
+                        }
+                    }
+                } else {
+                    gameData.combo = 1;
+                }
+                gameData.lastClickTime = now;
+
+                removeTarget(e.currentTarget);
+                createTarget();
+                updateUI();
+
+                if (gameData.clicks >= gameData.targetClicks) {
+                    levelUp();
+                }
+            }
+
+            // Handle game area click
+            function handleGameAreaClick(e) {
+                if (!gameData.gameActive) return;
+
+                gameData.totalShots++;
+                gameData.misses++;
+                createBulletHole(e.pageX, e.pageY);
+                createMuzzleFlash(e);
+                createClickEffect(e.pageX, e.pageY);
+
+                // Play shot sound
+                playSound('./misshit.mp3')
+
+                const accuracy = gameData.totalShots > 0 ? Math.round((gameData.hits / gameData.totalShots) * 100) : 100;
+                showAccuracyHit(e.pageX, e.pageY, accuracy);
+                updateUI();
+            }
+
+            // Level up
+            function levelUp() {
+                gameData.level++;
+                gameData.clicks = 0;
+                gameData.targetClicks = Math.floor(gameData.targetClicks * 1.2);
+                gameData.timeLeft += 10;
+
+                gameArea.style.boxShadow = '0 0 50px rgba(233, 69, 96, 0.7)';
+                setTimeout(() => {
+                    gameArea.style.boxShadow = '0 0 40px rgba(0, 0, 0, 0.8)';
+                }, 500);
+                playSound('./levelup.mp3')
+                removeAllTargets();
+                createTarget();
+                updateUI();
+            }
+
+            // End game
+            function endGame(isWin) {
+                gameData.gameActive = false;
+                clearInterval(gameData.timer);
+                crosshair.style.display = 'none';
+                removeAllTargets();
+
+                // Pause BGM
+                bgm.pause();
+
+                endTitle.textContent = isWin ? 'Congratulations!' : 'Time’s Up!';
+                finalScore.textContent = `Final Score: ${gameData.score}`;
+                finalAccuracy.textContent = `${gameData.totalShots > 0 ? Math.round((gameData.hits / gameData.totalShots) * 100) : 0}%`;
+                finalTargets.textContent = gameData.hits;
+                finalHeadshots.textContent = gameData.headshots;
+                finalLevel.textContent = gameData.level;
+
+                endScreen.style.display = 'flex';
+            }
+
+            // Create target
+            function createTarget() {
+                const targetSize = Math.max(30, 60 - gameData.level * 3);
+                const maxX = gameArea.clientWidth - targetSize;
+                const maxY = gameArea.clientHeight - targetSize;
+
+                const target = document.createElement('div');
+                target.className = 'target';
+                target.style.width = `${targetSize}px`;
+                target.style.height = `${targetSize}px`;
+                target.style.left = `${Math.random() * maxX}px`;
+                target.style.top = `${Math.random() * maxY}px`;
+
+                const targetInner = document.createElement('div');
+                targetInner.className = 'target-inner';
+
+                const targetRing = document.createElement('div');
+                targetRing.className = 'target-ring';
+                targetInner.appendChild(targetRing);
+
+                const targetCenter = document.createElement('div');
+                targetCenter.className = 'target-center';
+                targetInner.appendChild(targetCenter);
+
+                target.appendChild(targetInner);
+                targetInner.style.animation = 'targetPulse 0.8s infinite alternate';
+
+                target.addEventListener('click', handleTargetClick);
+                gameArea.appendChild(target);
+                gameData.targets.push(target);
+
+                if (gameData.level >= 3) {
+                    const numTargets = Math.min(4, Math.floor(gameData.level / 2));
+                    if (gameData.targets.length < numTargets) {
+                        setTimeout(createTarget, 300);
+                    }
+                }
+            }
+
+            // Remove target
+            function removeTarget(target) {
+                if (gameArea.contains(target)) {
+                    gameArea.removeChild(target);
+                }
+                gameData.targets = gameData.targets.filter(t => t !== target);
+            }
+
+            // Remove all targets
+            function removeAllTargets() {
+                gameData.targets.forEach(target => {
+                    if (gameArea.contains(target)) {
+                        gameArea.removeChild(target);
+                    }
+                });
+                gameData.targets = [];
+            }
+
+            // Create bullet hole
+            function createBulletHole(x, y) {
+                const bulletHole = document.createElement('div');
+                bulletHole.className = 'bullet-hole';
+                bulletHole.style.left = `${x - 5}px`;
+                bulletHole.style.top = `${y - 5}px`;
+
+                document.body.appendChild(bulletHole);
+                gameData.bulletHoles.push(bulletHole);
+
+                if (gameData.bulletHoles.length > 20) {
+                    const oldestBullet = gameData.bulletHoles.shift();
+                    if (document.body.contains(oldestBullet)) {
+                        document.body.removeChild(oldestBullet);
+                    }
+                }
+            }
+
+            // Remove bullet holes
+            function removeBulletHoles() {
+                gameData.bulletHoles.forEach(hole => {
+                    if (document.body.contains(hole)) {
+                        document.body.removeChild(hole);
+                    }
+                });
+                gameData.bulletHoles = [];
+            }
+
+            // Create muzzle flash
+            function createMuzzleFlash(e) {
+                muzzleFlash.style.left = `${e.clientX - 50}px`;
+                muzzleFlash.style.top = `${e.clientY - 50}px`;
+                muzzleFlash.style.opacity = '1';
+                muzzleFlash.style.animation = 'muzzleFlash 0.1s forwards';
+
+                setTimeout(() => {
+                    muzzleFlash.style.opacity = '0';
+                    muzzleFlash.style.animation = '';
+                }, 100);
+
+                gameArea.style.transform = 'translate(1px, 1px)';
+                setTimeout(() => {
+                    gameArea.style.transform = 'translate(0, 0)';
+                }, 50);
+            }
+
+            // Create click effect
+            function createClickEffect(x, y) {
+                const effect = document.createElement('div');
+                effect.className = 'click-effect';
+                effect.style.left = `${x - 25}px`;
+                effect.style.top = `${y - 25}px`;
+
+                document.body.appendChild(effect);
+                setTimeout(() => {
+                    if (document.body.contains(effect)) {
+                        document.body.removeChild(effect);
+                    }
+                }, 800);
+            }
+
+            // Create particles
+            function createParticles(x, y) {
+                const particleCount = 10;
+                for (let i = 0; i < particleCount; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    const size = Math.random() * 6 + 2;
+                    particle.style.width = `${size}px`;
+                    particle.style.height = `${size}px`;
+                    particle.style.left = `${x}px`;
+                    particle.style.top = `${y}px`;
+
+                    const tx = (Math.random() - 0.5) * 100;
+                    const ty = (Math.random() - 0.5) * 100;
+                    particle.style.setProperty('--tx', `${tx}px`);
+                    particle.style.setProperty('--ty', `${ty}px`);
+
+                    document.body.appendChild(particle);
+                    setTimeout(() => {
+                        if (document.body.contains(particle)) {
+                            document.body.removeChild(particle);
+                        }
+                    }, 1000);
+                }
+            }
+
+            // Show hit marker
+            function showHitMarker(x, y, isHeadshot) {
+                const hitMarker = document.createElement('div');
+                hitMarker.className = isHeadshot ? 'hit-marker headshot' : 'hit-marker';
+                hitMarker.textContent = isHeadshot ? 'HEADSHOT!' : '+HIT';
+                hitMarker.style.left = `${x - 30}px`;
+                hitMarker.style.top = `${y - 30}px`;
+
+                document.body.appendChild(hitMarker);
+                setTimeout(() => {
+                    if (document.body.contains(hitMarker)) {
+                        document.body.removeChild(hitMarker);
+                    }
+                }, 800);
+            }
+
+            // Show accuracy hit
+            function showAccuracyHit(x, y, accuracy) {
+                const hitAccuracy = document.createElement('div');
+                hitAccuracy.className = 'hit-accuracy';
+                hitAccuracy.textContent = `Accuracy: ${accuracy}%`;
+                hitAccuracy.style.left = `${x}px`;
+                hitAccuracy.style.top = `${y}px`;
+
+                document.body.appendChild(hitAccuracy);
+                setTimeout(() => {
+                    if (document.body.contains(hitAccuracy)) {
+                        document.body.removeChild(hitAccuracy);
+                    }
+                }, 2000);
+            }
+
+            // Show combo alert
+            function showComboAlert(x, y) {
+                const comboAlert = document.createElement('div');
+                comboAlert.className = 'hit-accuracy';
+                comboAlert.textContent = `${gameData.combo} COMBO!`;
+                comboAlert.style.left = `${x}px`;
+                comboAlert.style.top = `${y - 20}px`;
+
+                document.body.appendChild(comboAlert);
+                setTimeout(() => {
+                    if (document.body.contains(comboAlert)) {
+                        document.body.removeChild(comboAlert);
+                    }
+                }, 2000);
+            }
+
+            // Event listeners
+            startButton.addEventListener('click', () => {
+                console.log('Start button clicked');
+                playSound('./start.mp3')
+                startGame();
+            });
+            restartButton.addEventListener('click', () => {
+                console.log('Restart button clicked');
+                startGame();
+            });
+            gameArea.addEventListener('click', handleGameAreaClick);
+
+            // Crosshair follows mouse
+            document.addEventListener('mousemove', (e) => {
+                crosshair.style.left = `${e.clientX}px`;
+                crosshair.style.top = `${e.clientY}px`;
+            });
+        };
+    </script>
+   
+</body>
+</html>
